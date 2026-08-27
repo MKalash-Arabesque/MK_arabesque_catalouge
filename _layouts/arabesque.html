@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page.title and page.title != 'Home' %}{{ page.title | escape }} | {% endif %}{{ site.title | escape }}</title>
+    <meta name="description" content="{{ site.description | escape }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ '/assets/css/arabesque.css' | relative_url }}">
+  </head>
+  <body class="arabesque{% if page.url == '/' %} home{% endif %}">
+    <a class="skip-link" href="#maincontent">Skip to main content</a>
+    <header class="site-header">
+      <div class="header-side header-left">
+        <div>Muhammed Saied Kalash</div>
+        <div class="header-sub">The Art Works</div>
+      </div>
+      {% if page.url == '/' %}
+      <h1 class="wordmark">
+        <span class="wordmark-ar ar" lang="ar">أرابيسك</span>
+        <span class="wordmark-en">Arabesque</span>
+      </h1>
+      {% else %}
+      <a class="wordmark" href="{{ '/' | relative_url }}">
+        <span class="wordmark-ar ar" lang="ar">أرابيسك</span>
+        <span class="wordmark-en">Arabesque</span>
+      </a>
+      {% endif %}
+      <div class="header-side header-right">
+        <div class="ar" lang="ar">محمد سعيد كلش</div>
+        <div class="ar header-sub" lang="ar">الأعمال الفنية</div>
+      </div>
+    </header>
+    <main id="maincontent">
+      {{ content }}
+    </main>
+    <footer class="site-footer">
+      <p class="contact-label">Contact <span class="ar" lang="ar">للتواصل</span></p>
+      <p><a href="mailto:kalasharabesque@gmail.com">kalasharabesque@gmail.com</a></p>
+    </footer>
+  </body>
+</html>

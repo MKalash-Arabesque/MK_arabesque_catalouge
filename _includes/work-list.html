@@ -1,0 +1,40 @@
+{% assign items = site.data[site.metadata] %}
+<ul class="work-list">
+{% for item in items %}
+  {% assign show = false %}
+  {% if page.filter == "all" %}
+    {% assign show = true %}
+  {% elsif page.filter == "calligraphy" and item.content_en == "Text" %}
+    {% assign show = true %}
+  {% elsif page.filter == "ornament" and item.content_en == "Ornament" %}
+    {% assign show = true %}
+  {% elsif page.filter == "wood" %}
+    {% if item.material == "Wood" or item.material == "Wood and glass" %}
+      {% assign show = true %}
+    {% endif %}
+  {% elsif page.filter == "glass" %}
+    {% if item.material == "Glass" or item.material == "Plexiglass" %}
+      {% assign show = true %}
+    {% endif %}
+  {% elsif page.filter == "islamic-geometry" and item.content_en == "Geometry" %}
+    {% assign t = item.title | downcase %}
+    {% unless t contains "abstract" %}
+      {% assign show = true %}
+    {% endunless %}
+  {% elsif page.filter == "abstract" and item.content_en == "Geometry" %}
+    {% assign t = item.title | downcase %}
+    {% if t contains "abstract" %}
+      {% assign show = true %}
+    {% endif %}
+  {% endif %}
+  {% if show %}
+  <li>
+    <a href="{{ '/item.html' | relative_url }}?id={{ item.objectid }}">
+      <span class="work-en">{{ item.title }}</span>
+      <span class="work-ar ar" lang="ar">{{ item.title_ar }}</span>
+      {% if item.dimensions %}<span class="work-meta">{{ item.dimensions }}{% if item.material %} · {{ item.material }}{% endif %}</span>{% endif %}
+    </a>
+  </li>
+  {% endif %}
+{% endfor %}
+</ul>

@@ -1,37 +1,57 @@
 ---
-# JS based item page for CB-GH
-layout: default
-custom-foot: js/item-js.html;js/modal-hash-js.html
-gallery: true
+layout: arabesque
 ---
-
-<div class="container py-3">
-    <ul class="breadcrumb h6">
-        <li class="breadcrumb-item"><a class="text-dark" href="{{ '/' | relative_url }}">{{ site.title }}</a></li>
-        <li class="breadcrumb-item"><a class="text-dark" href="{{ '/browse.html' | relative_url }}">Browse</a></li>
-        <li id="bc-title" class="breadcrumb-item active text-dark" aria-current="page"></li>
-    </ul>
-    <div class="my-0 h5 small" id="item-format"></div>
-    <h2 id="item-title" class="mb-3"></h2>
-
-    <div id="loading" class="text-center">
-        <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div>
-    </div>
-
-    <div class="row justify-content-center">
-
-        <div class="col-12 col-md-10">
-            <div id="item-content"></div>
-        </div>
-        <div class="col-12 col-md-10">
-            <div id="item-metadata">
-            </div>
-        </div> 
-    </div>
-
-    <div id="browse-buttons" class="text-center">
-        <a class="btn btn-secondary" href="{{ '/browse.html' | relative_url }}">&laquo; Back to Collection Browse</a>
-    </div>
-    <div id="item-nav"></div>
- 
+<div id="item-page" class="item-page">
+  <p id="item-loading" class="item-loading">…</p>
+  <p id="item-missing" class="item-missing" hidden>Work not found. / العمل غير موجود.</p>
+  <article id="item-article" hidden>
+    <img id="item-image" alt="">
+    <h1 id="item-title-en" class="item-title-en"></h1>
+    <p id="item-title-ar" class="item-title-ar ar" lang="ar"></p>
+    <p id="item-desc-en" class="item-desc"></p>
+    <p id="item-desc-ar" class="item-desc ar" lang="ar"></p>
+    <div id="item-fields" class="item-fields"></div>
+  </article>
 </div>
+<script>
+(function () {
+  var objectsBase = {{ '/objects/' | relative_url | jsonify }};
+  var items = {{ site.data[site.metadata] | jsonify }};
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id');
+  var loading = document.getElementById('item-loading');
+  var missing = document.getElementById('item-missing');
+  var article = document.getElementById('item-article');
+  var item = null;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].objectid === id) {
+      item = items[i];
+      break;
+    }
+  }
+  loading.hidden = true;
+  if (!item) {
+    missing.hidden = false;
+    return;
+  }
+  var img = document.getElementById('item-image');
+  img.src = objectsBase + item.filename;
+  img.alt = item.title || '';
+  document.getElementById('item-title-en').textContent = item.title || '';
+  document.getElementById('item-title-ar').textContent = item.title_ar || '';
+  document.getElementById('item-desc-en').textContent = item.description || '';
+  document.getElementById('item-desc-ar').textContent = item.description_ar || '';
+  var fieldsEl = document.getElementById('item-fields');
+  function addField(label, value) {
+    if (!value) return;
+    var p = document.createElement('p');
+    p.textContent = label + value;
+    fieldsEl.appendChild(p);
+  }
+  addField('Script / الخط: ', item.script_en ? (item.script_en + (item.script_ar ? ' · ' + item.script_ar : '')) : '');
+  addField('Material / الخامة: ', item.material ? (item.material + (item.material_ar ? ' · ' + item.material_ar : '')) : '');
+  addField('Dimensions / المقاس: ', item.dimensions || '');
+  addField('Date / التاريخ: ', item.date || '');
+  article.hidden = false;
+})();
+</script>
