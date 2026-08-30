@@ -29,7 +29,7 @@ def header(is_home: bool = False) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Arabesque — Muhammed Saied Kalash</title>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/arabesque.css">
 </head>
 <body class="arabesque{' home' if is_home else ''}">
@@ -89,8 +89,10 @@ def write_home() -> None:
   </div>
   <section class="home-col home-about">
     <h2 class="home-col-title">
-      <span class="en-caps">About</span>
-      <span class="ar" lang="ar">عن الأعمال</span>
+      <a href="./about-kalash.html">
+        <span class="en-caps">About</span>
+        <span class="ar" lang="ar">عن الأعمال</span>
+      </a>
     </h2>
     <ul class="home-list">
       <li><a href="./about-kalash.html"><span class="en-caps">Muhammed Saied Kalash</span><span class="ar" lang="ar">محمد سعيد كلش</span></a></li>
@@ -231,7 +233,7 @@ def write_item(items: list[dict]) -> None:
   var img = document.getElementById('item-image');
   img.src = objectsBase + item.filename;
   img.alt = item.title || '';
-  document.getElementById('item-number').textContent = item.piece_number || '';
+  document.getElementById('item-number').textContent = index >= 0 ? String(index + 1) : '';
   document.getElementById('item-title-en').textContent = item.title || '';
   document.getElementById('item-title-ar').textContent = item.title_ar || '';
   document.getElementById('item-technique').textContent = item.technique || item.script_en || '';

@@ -154,7 +154,7 @@ layout: arabesque
   img.src = objectsBase + field(item, 'filename');
   img.alt = field(item, 'title') || '';
 
-  document.getElementById('item-number').textContent = field(item, 'piece_number') || '';
+  document.getElementById('item-number').textContent = index >= 0 ? String(index + 1) : '';
   document.getElementById('item-title-en').textContent = field(item, 'title') || '';
   document.getElementById('item-title-ar').textContent = field(item, 'title_ar') || '';
   document.getElementById('item-technique').textContent = field(item, 'technique') || field(item, 'script_en') || '';

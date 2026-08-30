@@ -58,8 +58,10 @@ permalink: /
 
   <section class="home-col home-about">
     <h2 class="home-col-title">
-      <span class="en-caps">About</span>
-      <span class="ar" lang="ar">عن الأعمال</span>
+      <a href="{{ '/about.html' | relative_url }}">
+        <span class="en-caps">About</span>
+        <span class="ar" lang="ar">عن الأعمال</span>
+      </a>
     </h2>
     <ul class="home-list">
       <li>
