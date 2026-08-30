@@ -50,29 +50,43 @@ layout: arabesque
     glass: { en: 'Glass and plexiglass', ar: 'أعمال الزجاج والأكريليك', href: 'glass-and-plexiglass.html', filter: 'glass' }
   };
 
+  function field(item, key) {
+    if (!item) return '';
+    if (item[key] != null && item[key] !== '') return item[key];
+    var bomKey = '\ufeff' + key;
+    if (item[bomKey] != null && item[bomKey] !== '') return item[bomKey];
+    return '';
+  }
+
   function matchesFilter(item, filter) {
+    var content = field(item, 'content_en');
+    var material = field(item, 'material');
+    var title = String(field(item, 'title') || '').toLowerCase();
     if (filter === 'all') return true;
-    if (filter === 'calligraphy') return item.content_en === 'Text';
-    if (filter === 'ornament') return item.content_en === 'Ornament';
-    if (filter === 'wood') return item.material === 'Wood' || item.material === 'Wood and glass';
-    if (filter === 'glass') return item.material === 'Glass' || item.material === 'Plexiglass';
+    if (filter === 'calligraphy') return content === 'Text';
+    if (filter === 'ornament') return content === 'Ornament';
+    if (filter === 'wood') return material === 'Wood' || material === 'Wood and glass';
+    if (filter === 'glass') return material === 'Glass' || material === 'Plexiglass';
     if (filter === 'islamic-geometry') {
-      return item.content_en === 'Geometry' && !String(item.title || '').toLowerCase().includes('abstract');
+      return content === 'Geometry' && title.indexOf('abstract') === -1;
     }
     if (filter === 'abstract') {
-      return item.content_en === 'Geometry' && String(item.title || '').toLowerCase().includes('abstract');
+      return content === 'Geometry' && title.indexOf('abstract') !== -1;
     }
     return true;
   }
 
   function inferCategory(item) {
-    if (item.content_en === 'Text') return 'calligraphy';
-    if (item.content_en === 'Ornament') return 'ornament';
-    if (item.content_en === 'Geometry') {
-      return String(item.title || '').toLowerCase().includes('abstract') ? 'abstract' : 'islamic-geometry';
+    var content = field(item, 'content_en');
+    var material = field(item, 'material');
+    var title = String(field(item, 'title') || '').toLowerCase();
+    if (content === 'Text') return 'calligraphy';
+    if (content === 'Ornament') return 'ornament';
+    if (content === 'Geometry') {
+      return title.indexOf('abstract') !== -1 ? 'abstract' : 'islamic-geometry';
     }
-    if (item.material === 'Glass' || item.material === 'Plexiglass') return 'glass';
-    if (item.material === 'Wood' || item.material === 'Wood and glass') return 'wood';
+    if (material === 'Glass' || material === 'Plexiglass') return 'glass';
+    if (material === 'Wood' || material === 'Wood and glass') return 'wood';
     return 'all';
   }
 
@@ -91,7 +105,7 @@ layout: arabesque
   var index = -1;
 
   for (var i = 0; i < items.length; i++) {
-    if (items[i].objectid === id) {
+    if (field(items[i], 'objectid') === id) {
       item = items[i];
       break;
     }
@@ -111,8 +125,9 @@ layout: arabesque
   for (var j = 0; j < items.length; j++) {
     if (matchesFilter(items[j], from)) set.push(items[j]);
   }
+  var itemId = field(item, 'objectid');
   for (var k = 0; k < set.length; k++) {
-    if (set[k].objectid === item.objectid) {
+    if (field(set[k], 'objectid') === itemId) {
       index = k;
       break;
     }
@@ -136,18 +151,18 @@ layout: arabesque
   crumb.innerHTML = html;
 
   var img = document.getElementById('item-image');
-  img.src = objectsBase + item.filename;
-  img.alt = item.title || '';
+  img.src = objectsBase + field(item, 'filename');
+  img.alt = field(item, 'title') || '';
 
-  document.getElementById('item-number').textContent = item.piece_number || '';
-  document.getElementById('item-title-en').textContent = item.title || '';
-  document.getElementById('item-title-ar').textContent = item.title_ar || '';
-  document.getElementById('item-technique').textContent = item.technique || item.script_en || '';
-  document.getElementById('item-technique-ar').textContent = item.technique_ar || item.script_ar || '';
-  document.getElementById('item-year').textContent = item.date || '';
+  document.getElementById('item-number').textContent = field(item, 'piece_number') || '';
+  document.getElementById('item-title-en').textContent = field(item, 'title') || '';
+  document.getElementById('item-title-ar').textContent = field(item, 'title_ar') || '';
+  document.getElementById('item-technique').textContent = field(item, 'technique') || field(item, 'script_en') || '';
+  document.getElementById('item-technique-ar').textContent = field(item, 'technique_ar') || field(item, 'script_ar') || '';
+  document.getElementById('item-year').textContent = field(item, 'date') || '';
 
   function itemHref(other) {
-    return itemBase + '?id=' + encodeURIComponent(other.objectid) + '&from=' + encodeURIComponent(from);
+    return itemBase + '?id=' + encodeURIComponent(field(other, 'objectid')) + '&from=' + encodeURIComponent(from);
   }
 
   var prev = document.getElementById('item-prev');
