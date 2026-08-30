@@ -153,6 +153,7 @@ def write_item(items: list[dict]) -> None:
             "script_en": i.get("script_en", ""),
             "script_ar": i.get("script_ar", ""),
             "date": i.get("date", ""),
+            "dimensions": i.get("dimensions", ""),
             "piece_number": i.get("piece_number", ""),
             "content_en": i.get("content_en", ""),
             "material": i.get("material", ""),
@@ -161,8 +162,30 @@ def write_item(items: list[dict]) -> None:
         if i.get("content_en") == "Text"
     ][:80]
 
+    # Prefer the mockup example in the preview set
+    for i in items:
+        if i.get("objectid") == "acr-099":
+            sample = {
+                "objectid": i["objectid"],
+                "filename": i["filename"],
+                "title": i["title"],
+                "title_ar": i["title_ar"],
+                "technique": i.get("technique", ""),
+                "technique_ar": i.get("technique_ar", ""),
+                "script_en": i.get("script_en", ""),
+                "script_ar": i.get("script_ar", ""),
+                "date": i.get("date", ""),
+                "dimensions": i.get("dimensions", ""),
+                "piece_number": i.get("piece_number", ""),
+                "content_en": i.get("content_en", ""),
+                "material": i.get("material", ""),
+            }
+            if all(p["objectid"] != "acr-099" for p in payload):
+                payload.append(sample)
+            break
+
     # Copy first few object images used in preview
-    for item in payload[:12]:
+    for item in payload[:12] + [p for p in payload if p["objectid"] == "acr-099"]:
         src = OBJECTS / item["filename"]
         if src.exists():
             shutil.copy2(src, OUT / "objects" / item["filename"])
@@ -179,17 +202,18 @@ def write_item(items: list[dict]) -> None:
       <figure class="item-figure"><img id="item-image" alt=""></figure>
       <a id="item-next" class="item-arrow" href="#" aria-label="Next work" hidden>&gt;</a>
     </div>
-    <p id="item-number" class="item-number"></p>
     <div class="item-meta">
       <div class="item-meta-en">
         <p id="item-title-en" class="item-title-en"></p>
         <p id="item-technique" class="item-technique"></p>
       </div>
+      <p id="item-number" class="item-number"></p>
       <div class="item-meta-ar">
         <p id="item-title-ar" class="item-title-ar ar" lang="ar"></p>
         <p id="item-technique-ar" class="item-technique-ar ar" lang="ar"></p>
       </div>
     </div>
+    <p id="item-size" class="item-size"></p>
     <p id="item-year" class="item-year"></p>
   </article>
 </div>
@@ -206,6 +230,24 @@ def write_item(items: list[dict]) -> None:
     if (filter === 'all') return true;
     if (filter === 'calligraphy') return item.content_en === 'Text';
     return true;
+  }}
+  function catalogueCode(filename) {{
+    var base = String(filename || '').replace(/\\.[^.]+$/, '');
+    return base.split('_')[0] || '';
+  }}
+  function sizeCode(filename, dimensions) {{
+    var base = String(filename || '').replace(/\\.[^.]+$/, '');
+    var parts = base.split('_');
+    for (var i = parts.length - 1; i >= 1; i--) {{
+      var part = parts[i];
+      if (/^\\d/i.test(part) || /[xX]/.test(part) || /d$/i.test(part) || /poly/i.test(part)) {{
+        return part.replace(/x/g, 'X').replace(/d$/i, 'D');
+      }}
+    }}
+    var dims = String(dimensions || '');
+    var m = dims.match(/(\\d+(?:\\.\\d+)?)\\s*[×xX]\\s*(\\d+(?:\\.\\d+)?)/);
+    if (m) return m[1] + 'X' + m[2];
+    return '';
   }}
   var params = new URLSearchParams(window.location.search);
   var id = params.get('id') || (items[0] && items[0].objectid);
@@ -233,11 +275,12 @@ def write_item(items: list[dict]) -> None:
   var img = document.getElementById('item-image');
   img.src = objectsBase + item.filename;
   img.alt = item.title || '';
-  document.getElementById('item-number').textContent = index >= 0 ? String(index + 1) : '';
+  document.getElementById('item-number').textContent = catalogueCode(item.filename);
   document.getElementById('item-title-en').textContent = item.title || '';
   document.getElementById('item-title-ar').textContent = item.title_ar || '';
   document.getElementById('item-technique').textContent = item.technique || item.script_en || '';
   document.getElementById('item-technique-ar').textContent = item.technique_ar || item.script_ar || '';
+  document.getElementById('item-size').textContent = sizeCode(item.filename, item.dimensions);
   document.getElementById('item-year').textContent = item.date || '';
   function itemHref(other) {{
     return itemBase + '?id=' + encodeURIComponent(other.objectid) + '&from=' + encodeURIComponent(from);
