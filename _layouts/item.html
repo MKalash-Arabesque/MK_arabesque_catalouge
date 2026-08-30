@@ -4,54 +4,163 @@ layout: arabesque
 <div id="item-page" class="item-page">
   <p id="item-loading" class="item-loading">…</p>
   <p id="item-missing" class="item-missing" hidden>Work not found. / العمل غير موجود.</p>
+
   <article id="item-article" hidden>
-    <img id="item-image" alt="">
-    <h1 id="item-title-en" class="item-title-en"></h1>
-    <p id="item-title-ar" class="item-title-ar ar" lang="ar"></p>
-    <p id="item-desc-en" class="item-desc"></p>
-    <p id="item-desc-ar" class="item-desc ar" lang="ar"></p>
-    <div id="item-fields" class="item-fields"></div>
+    <nav id="item-breadcrumb" class="item-breadcrumb" aria-label="Breadcrumb"></nav>
+
+    <div class="item-viewer">
+      <a id="item-prev" class="item-arrow" href="#" aria-label="Previous work" hidden>&lt;</a>
+      <figure class="item-figure">
+        <img id="item-image" alt="">
+      </figure>
+      <a id="item-next" class="item-arrow" href="#" aria-label="Next work" hidden>&gt;</a>
+    </div>
+
+    <p id="item-number" class="item-number"></p>
+
+    <div class="item-meta">
+      <div class="item-meta-en">
+        <p id="item-title-en" class="item-title-en"></p>
+        <p id="item-technique" class="item-technique"></p>
+      </div>
+      <div class="item-meta-ar">
+        <p id="item-title-ar" class="item-title-ar ar" lang="ar"></p>
+        <p id="item-technique-ar" class="item-technique-ar ar" lang="ar"></p>
+      </div>
+    </div>
+
+    <p id="item-year" class="item-year"></p>
   </article>
 </div>
+
 <script>
 (function () {
   var objectsBase = {{ '/objects/' | relative_url | jsonify }};
+  var itemBase = {{ '/item.html' | relative_url | jsonify }};
+  var pageBase = {{ '/' | relative_url | jsonify }};
   var items = {{ site.data[site.metadata] | jsonify }};
+
+  var categories = {
+    all: { en: 'All works', ar: 'كل الأعمال', href: 'all-works.html', filter: 'all' },
+    calligraphy: { en: 'Calligraphy', ar: 'الخط العربي', href: 'calligraphy.html', filter: 'calligraphy' },
+    'islamic-geometry': { en: 'Islamic geometry', ar: 'هندسة إسلامية', href: 'islamic-geometry.html', filter: 'islamic-geometry' },
+    ornament: { en: 'Botanical ornaments', ar: 'زخارف إسلامية', href: 'botanical-ornaments.html', filter: 'ornament' },
+    abstract: { en: 'Abstract works', ar: 'زخارف مجردة', href: 'abstract-works.html', filter: 'abstract' },
+    wood: { en: 'Wood works', ar: 'أعمال الخشب', href: 'wood-works.html', filter: 'wood' },
+    glass: { en: 'Glass and plexiglass', ar: 'أعمال الزجاج والأكريليك', href: 'glass-and-plexiglass.html', filter: 'glass' }
+  };
+
+  function matchesFilter(item, filter) {
+    if (filter === 'all') return true;
+    if (filter === 'calligraphy') return item.content_en === 'Text';
+    if (filter === 'ornament') return item.content_en === 'Ornament';
+    if (filter === 'wood') return item.material === 'Wood' || item.material === 'Wood and glass';
+    if (filter === 'glass') return item.material === 'Glass' || item.material === 'Plexiglass';
+    if (filter === 'islamic-geometry') {
+      return item.content_en === 'Geometry' && !String(item.title || '').toLowerCase().includes('abstract');
+    }
+    if (filter === 'abstract') {
+      return item.content_en === 'Geometry' && String(item.title || '').toLowerCase().includes('abstract');
+    }
+    return true;
+  }
+
+  function inferCategory(item) {
+    if (item.content_en === 'Text') return 'calligraphy';
+    if (item.content_en === 'Ornament') return 'ornament';
+    if (item.content_en === 'Geometry') {
+      return String(item.title || '').toLowerCase().includes('abstract') ? 'abstract' : 'islamic-geometry';
+    }
+    if (item.material === 'Glass' || item.material === 'Plexiglass') return 'glass';
+    if (item.material === 'Wood' || item.material === 'Wood and glass') return 'wood';
+    return 'all';
+  }
+
+  function pageUrl(path) {
+    if (!pageBase || pageBase === '/') return '/' + path;
+    return pageBase.replace(/\/?$/, '/') + path;
+  }
+
   var params = new URLSearchParams(window.location.search);
   var id = params.get('id');
+  var from = params.get('from') || '';
   var loading = document.getElementById('item-loading');
   var missing = document.getElementById('item-missing');
   var article = document.getElementById('item-article');
   var item = null;
+  var index = -1;
+
   for (var i = 0; i < items.length; i++) {
     if (items[i].objectid === id) {
       item = items[i];
       break;
     }
   }
+
   loading.hidden = true;
   if (!item) {
     missing.hidden = false;
     return;
   }
+
+  if (!categories[from]) {
+    from = inferCategory(item);
+  }
+
+  var set = [];
+  for (var j = 0; j < items.length; j++) {
+    if (matchesFilter(items[j], from)) set.push(items[j]);
+  }
+  for (var k = 0; k < set.length; k++) {
+    if (set[k].objectid === item.objectid) {
+      index = k;
+      break;
+    }
+  }
+
+  var cat = categories[from] || categories.all;
+  var crumb = document.getElementById('item-breadcrumb');
+  var allCat = categories.all;
+  var html = '';
+  html += '<a class="crumb" href="' + pageUrl(allCat.href) + '">';
+  html += '<span class="en-caps">' + allCat.en + '</span>';
+  html += '<span class="ar" lang="ar">' + allCat.ar + '</span>';
+  html += '</a>';
+  if (from !== 'all') {
+    html += '<span class="crumb-sep" aria-hidden="true">&gt;</span>';
+    html += '<a class="crumb" href="' + pageUrl(cat.href) + '">';
+    html += '<span class="en-caps">' + cat.en + '</span>';
+    html += '<span class="ar" lang="ar">' + cat.ar + '</span>';
+    html += '</a>';
+  }
+  crumb.innerHTML = html;
+
   var img = document.getElementById('item-image');
   img.src = objectsBase + item.filename;
   img.alt = item.title || '';
+
+  document.getElementById('item-number').textContent = item.piece_number || '';
   document.getElementById('item-title-en').textContent = item.title || '';
   document.getElementById('item-title-ar').textContent = item.title_ar || '';
-  document.getElementById('item-desc-en').textContent = item.description || '';
-  document.getElementById('item-desc-ar').textContent = item.description_ar || '';
-  var fieldsEl = document.getElementById('item-fields');
-  function addField(label, value) {
-    if (!value) return;
-    var p = document.createElement('p');
-    p.textContent = label + value;
-    fieldsEl.appendChild(p);
+  document.getElementById('item-technique').textContent = item.technique || item.script_en || '';
+  document.getElementById('item-technique-ar').textContent = item.technique_ar || item.script_ar || '';
+  document.getElementById('item-year').textContent = item.date || '';
+
+  function itemHref(other) {
+    return itemBase + '?id=' + encodeURIComponent(other.objectid) + '&from=' + encodeURIComponent(from);
   }
-  addField('Script / الخط: ', item.script_en ? (item.script_en + (item.script_ar ? ' · ' + item.script_ar : '')) : '');
-  addField('Material / الخامة: ', item.material ? (item.material + (item.material_ar ? ' · ' + item.material_ar : '')) : '');
-  addField('Dimensions / المقاس: ', item.dimensions || '');
-  addField('Date / التاريخ: ', item.date || '');
+
+  var prev = document.getElementById('item-prev');
+  var next = document.getElementById('item-next');
+  if (index > 0) {
+    prev.hidden = false;
+    prev.href = itemHref(set[index - 1]);
+  }
+  if (index >= 0 && index < set.length - 1) {
+    next.hidden = false;
+    next.href = itemHref(set[index + 1]);
+  }
+
   article.hidden = false;
 })();
 </script>

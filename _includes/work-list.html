@@ -29,7 +29,7 @@
   {% endif %}
   {% if show %}
   <li>
-    <a href="{{ '/item.html' | relative_url }}?id={{ item.objectid }}">
+    <a href="{{ '/item.html' | relative_url }}?id={{ item.objectid }}&amp;from={{ page.filter }}">
       <span class="work-en">{{ item.title }}</span>
       <span class="work-ar ar" lang="ar">{{ item.title_ar }}</span>
       {% if item.dimensions %}<span class="work-meta">{{ item.dimensions }}{% if item.material %} · {{ item.material }}{% endif %}</span>{% endif %}

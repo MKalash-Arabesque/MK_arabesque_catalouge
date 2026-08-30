@@ -5,11 +5,7 @@ permalink: /
 ---
 
 <div class="home-stage">
-  <section class="home-col home-browse">
-    <h2 class="home-col-title">
-      <span class="en-caps">Browse</span>
-      <span class="ar" lang="ar">تصفح</span>
-    </h2>
+  <section class="home-col home-browse" aria-label="Browse works">
     <ul class="home-list">
       <li>
         <a href="{{ '/all-works.html' | relative_url }}">
